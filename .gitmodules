@@ -1,0 +1,6 @@
+[submodule "3rdparty/TensorRT"]
+	path = 3rdparty/TensorRT
+	url = https://github.com/NVIDIA/TensorRT.git
+[submodule "3rdparty/tensorflow"]
+	path = 3rdparty/tensorflow
+	url = https://github.com/tensorflow/tensorflow.git
