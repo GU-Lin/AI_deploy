@@ -1,6 +1,5 @@
 #include <iostream>
 #include <opencv2/opencv.hpp>
-#include "inference.hpp"
 #include <string>
 #include <vector>
 
@@ -21,10 +20,11 @@ class objectDetection
         objectDetection();
         ~objectDetection();
         void preprocess(cv::Mat input, cv::Mat &output);
+        void HWC2NormalCHW(cv::Mat input, std::vector<float> &data);
         void postprocess();
         void run();
     private:
-        inference engine;
+        // inference engine;
         int i_height;
         int i_width;
         int i_channels;
@@ -32,4 +32,7 @@ class objectDetection
         int nout;
         float box_threshold;
         float nms_threshold;
+        bool autoFlag = true;
+        bool scaleFillFlag = false;
+        int stride = 32;
 };
