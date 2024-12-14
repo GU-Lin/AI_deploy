@@ -12,11 +12,12 @@ int main()
     cv::Mat outImg;
     std::vector<float> data;
     objTool.preprocess(img, outImg);
+    cv::resize(outImg,outImg,cv::Size(640,640),cv::INTER_LINEAR);
     objTool.HWC2NormalCHW(outImg, data);
     std::cout << data[0] << std::endl;
 
     inferenceTool infTool("./data/yolov9.trt");
-    // infTool.creatContext("./data/yolov9.trt");
+    infTool.run(data);
 
     cv::imwrite("./data/test.png",outImg);
     // std::cout << r << std::endl;

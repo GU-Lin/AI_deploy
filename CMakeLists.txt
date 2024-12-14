@@ -5,6 +5,8 @@ project("main") # 建立一個CMake專案
 # TensorRT 配置
 set(TENSORRT_DIR "build_x86_64/TensorRT")
 include_directories("${TENSORRT_DIR}/include")
+include_directories(/"${TENSORRT_DIR}/include/common")
+include_directories(/"${TENSORRT_DIR}/include/utils")
 link_directories("${TENSORRT_DIR}/lib")
 set(TENSORRT_LIBS nvinfer nvinfer_plugin nvonnxparser)
 
