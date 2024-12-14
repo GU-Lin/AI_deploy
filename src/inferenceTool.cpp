@@ -1,7 +1,4 @@
 #include "../include/inferenceTool.hpp"
-
-
-
 inferenceTool::inferenceTool(std::string path)
 {
     std::ifstream file(path, std::ios::binary);
@@ -70,6 +67,8 @@ inferenceTool::~inferenceTool()
     cudaFree(buffers[0]);
     cudaFree(buffers[1]);
     free(hostData);
+    m_context.reset();
+    m_runtime.reset();
 }
 
 void inferenceTool::run(std::vector<float> &input)
