@@ -2,14 +2,14 @@
 #include <opencv2/opencv.hpp>
 #include <string>
 #include <vector>
-
+#include <algorithm>
 
 struct PredBox
 {
-    float x1;
-    float y1;
-    float x2;
-    float y2;
+    float boxLeft;
+    float boxTop;
+    float boxRight;
+    float boxDown;
     float score;
     int label;
 };
@@ -21,17 +21,17 @@ class objectDetection
         ~objectDetection();
         void preprocess(cv::Mat input, cv::Mat &output);
         void HWC2NormalCHW(cv::Mat input, std::vector<float> &data);
+        float iou(PredBox box1, PredBox box2);
+        float areaBox(PredBox box);
         void postprocess();
-        void run();
+        void run(std::vector<float> &input);
     private:
         // inference engine;
         int i_height;
         int i_width;
         int i_channels;
-        int fmap_num;
-        int nout;
-        float box_threshold;
-        float nms_threshold;
+        float m_conf_thres = 0.25;
+        float m_iou_thres = 0.45;
         bool autoFlag = true;
         bool scaleFillFlag = false;
         int stride = 32;

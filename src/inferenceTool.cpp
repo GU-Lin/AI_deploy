@@ -48,6 +48,7 @@ inferenceTool::inferenceTool(std::string path)
 
     std::cout << "Input size is " << m_inputSize << std::endl;
     std::cout << "Output size is " << m_outputSize << std::endl;
+
     std::cout << "Load " << path << " successful" << std::endl;
 }
 
@@ -57,6 +58,7 @@ int inferenceTool::getIOSize(char const *name)
     int temp = 1;
     for(int i = 0; i < m_engine->getTensorShape(name).nbDims; i++)
     {
+        std::cout << m_engine->getTensorShape(name).d[i] << ", ";
         temp*=m_engine->getTensorShape(name).d[i];
     }
     return temp;
@@ -71,7 +73,7 @@ inferenceTool::~inferenceTool()
     m_runtime.reset();
 }
 
-void inferenceTool::run(std::vector<float> &input)
+void inferenceTool::run(std::vector<float> &input, cv::Mat &output)
 {
     cudaStream_t stream;
     cudaStreamCreate(&stream);
@@ -84,6 +86,9 @@ void inferenceTool::run(std::vector<float> &input)
     // From device to host
     cudaMemcpyAsync(hostData, buffers[1], m_outputSize * sizeof(float), cudaMemcpyDeviceToHost, stream);
     cudaStreamSynchronize(stream);
-    std::cout << "Run done" << std::endl;
+
+    cv::Mat m(m_outputBoxNum,m_outputClass, CV_32F, hostData);
+    output = m.clone();
+
 
 }

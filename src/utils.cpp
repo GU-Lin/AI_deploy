@@ -57,3 +57,27 @@ void objectDetection::HWC2NormalCHW(cv::Mat input, std::vector<float> &data)
     }
     data = result;
 }
+
+float objectDetection::areaBox(PredBox box)
+{
+    return (box.boxRight - box.boxLeft) * (box.boxDown - box.boxTop);
+}
+
+float objectDetection::iou(PredBox box1, PredBox box2)
+{
+    struct PredBox iouBox;
+    iouBox.boxLeft = std::max(box1.boxLeft,box2.boxRight);
+    iouBox.boxTop = std::max(box1.boxTop,box2.boxTop);
+    iouBox.boxRight = std::max(box1.boxRight,box2.boxRight);
+    iouBox.boxDown = std::max(box1.boxDown,box2.boxDown);
+
+    float unionArea = std::max(iouBox.boxRight - iouBox.boxLeft,float(0.0)) * \
+                      std::max(iouBox.boxDown - iouBox.boxTop,float(0.0));
+    float crossArea = areaBox(box1) + areaBox(box2) - unionArea;
+    if(crossArea == 0.0 || unionArea == 0.0)
+    {
+        return 0.0;
+    }
+    return unionArea/crossArea;
+}
+

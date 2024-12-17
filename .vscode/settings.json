@@ -73,6 +73,8 @@
         "typeinfo": "cpp",
         "variant": "cpp",
         "typeindex": "cpp",
-        "span": "cpp"
+        "span": "cpp",
+        "forward_list": "cpp",
+        "regex": "cpp"
     }
 }

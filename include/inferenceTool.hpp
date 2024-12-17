@@ -8,7 +8,7 @@
 #include <common/buffers.h>
 #include <fstream>
 #include <memory>
-
+#include <fstream>
 
 using namespace nvinfer1;
 class Logger : public ILogger {
@@ -25,7 +25,7 @@ class inferenceTool
     public:
         inferenceTool(std::string path);
         ~inferenceTool();
-        void run(std::vector<float> &input);
+        void run(std::vector<float> &input, cv::Mat &output);
     private:
         std::string m_modelPath;
         std::unique_ptr<IExecutionContext> m_context;
@@ -33,14 +33,15 @@ class inferenceTool
         std::unique_ptr<IRuntime> m_runtime;
         int m_inputSize = 0;
         int m_outputSize = 0;
+        int m_outputBoxNum = 8400;
+        int m_outputClass = 84; // w,y,w,h and 80 class-> 80+4
         int getIOSize(char const *name);
         Logger gLogger;
         char const* inputName;
         char const* outputName;
-        // const int inputSize;
-        // const int outputSize;
         void* buffers[2];
         float* hostData;
+
 };
 
 
