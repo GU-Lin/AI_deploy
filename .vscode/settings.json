@@ -75,6 +75,7 @@
         "typeindex": "cpp",
         "span": "cpp",
         "forward_list": "cpp",
-        "regex": "cpp"
+        "regex": "cpp",
+        "*.inc": "cpp"
     }
 }

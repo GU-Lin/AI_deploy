@@ -15,31 +15,18 @@ void objectDetection::preprocess(cv::Mat input, cv::Mat &output)
     cv::Size sizeEnlarge(std::round(r*sizeSrc.width),std::round(r*sizeSrc.height));
 
     // Compute padding
-    int dw = sizeDst.width - sizeEnlarge.width;
-    int dh = sizeDst.height - sizeEnlarge.height;
+    int dw = (sizeDst.width - sizeEnlarge.width)/2;
+    int dh = (sizeDst.height - sizeEnlarge.height)/2;
 
-    if(autoFlag)
-    {
-        dw = (sizeDst.width - sizeEnlarge.width)%stride;
-        dh = (sizeDst.height - sizeEnlarge.height)%stride;
-    }else if(scaleFillFlag)
-    {
-        dw = 0;
-        dh = 0;
-        sizeEnlarge = sizeDst;
-        r = std::min(sizeEnlarge.width/sizeSrc.width, sizeEnlarge.height/sizeSrc.height);
-    }
-    dw/=2;
-    dh/=2;
-    // Resioz
-    cv::resize(src,src,sizeEnlarge,cv::INTER_LINEAR);
+    cv::Mat M = cv::Mat::zeros(2,3,CV_32F);
+    M.at<float>(0,0) = r;
+    M.at<float>(1,1) = r;
+    M.at<float>(0,2) = dw;
+    M.at<float>(1,2) = dh;
+    std::cout << M << std::endl;
+    cv::warpAffine(src,src,M,(cv::Size(640,640)),cv::INTER_LINEAR,cv::BORDER_CONSTANT,cv::Scalar(114,114,114));
+    src.copyTo(output) ;
 
-    // Construct image
-    cv::Scalar color(114, 114, 114); // BGR 顏色
-    output.create(cv::Size(sizeEnlarge.width+2*dw,sizeEnlarge.height+2*dh), CV_8UC3);
-    output.setTo(color);
-    cv::Rect roi(dw,dh,src.cols,src.rows);
-    src.copyTo(output(roi)) ;
 }
 
 void objectDetection::HWC2NormalCHW(cv::Mat input, std::vector<float> &data)
@@ -47,7 +34,7 @@ void objectDetection::HWC2NormalCHW(cv::Mat input, std::vector<float> &data)
     std::vector<cv::Mat> inputChannel(3);
     cv::Mat img;
     cv::cvtColor(input, img, cv::COLOR_BGR2RGB);
-    img.convertTo(img, CV_32FC3, 1.0f/255.f);
+    img.convertTo(img, CV_32F, 1.0f/255.f);
     cv::split(img, inputChannel);
     std::vector<float>result;
     for(int i = 0; i < 3; i++)

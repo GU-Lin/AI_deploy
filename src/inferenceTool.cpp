@@ -87,8 +87,6 @@ void inferenceTool::run(std::vector<float> &input, cv::Mat &output)
     cudaMemcpyAsync(hostData, buffers[1], m_outputSize * sizeof(float), cudaMemcpyDeviceToHost, stream);
     cudaStreamSynchronize(stream);
 
-    cv::Mat m(m_outputBoxNum,m_outputClass, CV_32F, hostData);
+    cv::Mat m(m_outputClass,m_outputBoxNum, CV_32FC1, hostData);
     output = m.clone();
-
-
 }
