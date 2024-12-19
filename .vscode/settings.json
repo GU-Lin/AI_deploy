@@ -76,6 +76,9 @@
         "span": "cpp",
         "forward_list": "cpp",
         "regex": "cpp",
-        "*.inc": "cpp"
+        "*.inc": "cpp",
+        "cfenv": "cpp",
+        "codecvt": "cpp",
+        "iomanip": "cpp"
     }
 }

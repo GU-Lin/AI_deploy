@@ -1,7 +1,17 @@
 # 使用 Ubuntu 作為基礎映像
-FROM ubuntu:22.04
-
+FROM ubuntu:20.04
+ENV HTTP_PROXY=http://10.110.16.62:8080
+ENV HTTPS_PROXY=https://10.110.16.62:8080
+ENV http_proxy=http://10.110.16.62:8080
+ENV https_proxy=https://10.110.16.62:8080
+ENV DEBIAN_FRONTEND=noninteractive
 # 更新軟件包並安裝必要的依賴
+
+RUN apt-get update && apt-get install -y tzdata && \
+    ln -fs /usr/share/zoneinfo/Asia/Taipei /etc/localtime && \
+    echo "Asia/Taipei" > /etc/timezone && \
+    dpkg-reconfigure -f noninteractive tzdata
+
 RUN apt-get update && apt-get install -y \
     build-essential \
     cmake \

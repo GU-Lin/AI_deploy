@@ -16,9 +16,9 @@ int main()
     objTool.HWC2NormalCHW(outImg, data);
     std::cout << data[0] << std::endl;
     cv::Mat res;
-    inferenceTool infTool("./data/yolov9.trt");
+    inferenceTool infTool("./data/yolov9-m-converted.trt");
     infTool.run(data,res);
-
+    objTool.postprocess(res);
 
     // std::cout << r << std::endl;
 }

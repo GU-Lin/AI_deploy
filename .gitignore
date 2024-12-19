@@ -3,3 +3,6 @@ Makefile
 CMakeCache.txt
 cmake_install.cmake
 CMakeFiles
+/data/*.pt
+/data/*.trt
+/data/*.onnx
