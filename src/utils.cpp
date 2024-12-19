@@ -23,7 +23,6 @@ void objectDetection::preprocess(cv::Mat input, cv::Mat &output)
     M.at<float>(1,1) = r;
     M.at<float>(0,2) = dw;
     M.at<float>(1,2) = dh;
-    std::cout << M << std::endl;
     cv::warpAffine(src,src,M,(cv::Size(640,640)),cv::INTER_LINEAR,cv::BORDER_CONSTANT,cv::Scalar(114,114,114));
     src.copyTo(output) ;
 
@@ -45,18 +44,18 @@ void objectDetection::HWC2NormalCHW(cv::Mat input, std::vector<float> &data)
     data = result;
 }
 
-float objectDetection::areaBox(PredBox box)
+float objectDetection::areaBox(PredBox &box)
 {
     return box.width * box.height;
 }
 
 float objectDetection::iou(PredBox box1, PredBox box2)
 {
-    struct PredBox iouBox;
+
     float left = std::max(box1.cx-box1.width/2, box2.cx-box2.width/2);
     float top = std::max(box1.cy-box1.height/2,box2.cy-box2.height/2);
-    float right = std::max(box1.cx+box1.width/2, box2.cx+box2.width/2);
-    float down = std::max(box1.cy+box1.height/2,box2.cy+box2.height/2);
+    float right = std::min(box1.cx+box1.width/2, box2.cx+box2.width/2);
+    float down = std::min(box1.cy+box1.height/2,box2.cy+box2.height/2);
 
     float unionArea = std::max(right - left,float(0.0)) * \
                       std::max(down - top,float(0.0));
@@ -88,7 +87,7 @@ void objectDetection::postprocess(cv::Mat &input)
         {
             PredBox pbox;
             pbox.cx = cx;
-            pbox.cy = cx;
+            pbox.cy = cy;
             pbox.width = w;
             pbox.height = h;
             pbox.score = maxVal;
@@ -107,5 +106,69 @@ void objectDetection::postprocess(cv::Mat &input)
             return a.score > b.score;
         });
     }
-    
+    // NMS
+    NMS(m_PredBox_vector);
+}
+
+void objectDetection::NMS(std::vector<PredBox> &pred)
+{
+    std::vector<PredBox> result;
+    std::vector<bool> table(pred.size(),false);
+    for(int i = 0; i < pred.size(); i++)
+    {
+        if(table[i])continue;
+        PredBox temp = pred[i];
+        result.push_back(temp);
+        for(int j = i+1; j < pred.size(); j++)
+        {
+            if(table[j])continue;
+            if(iou(temp,pred[j]) > m_iou_thres)
+            {
+                table[j] = true;
+            }
+        }
+    }
+    pred = result;
+}
+
+void objectDetection::draw(cv::Mat &input, cv::Mat &output, std::vector<PredBox> &pred)
+{
+    output = input.clone();
+    float ration_w = 640/float(input.cols);
+    float ration_h = 640/float(input.rows);
+    for(int i = pred.size()-1; i >= 0 ; i--)
+    {
+        int left = int(pred[i].cx-pred[i].width/2);
+        int top  = int(pred[i].cy-pred[i].height/2);
+        int width = pred[i].width;
+        int height = pred[i].height;
+        if(ration_h > ration_w)
+        {
+            left = left /ration_w;
+            top  = (top-(640-ration_w*input.rows)/2)/ration_w;
+            width = width / ration_w;
+            height = height / ration_w;
+        }else
+        {
+            left = left /ration_h;
+            top  = (top-(640-ration_h*input.cols)/2)/ration_h;
+            width = width / ration_h;
+            height = height / ration_h;
+        }
+        // Rectangle
+        cv::rectangle(output, cv::Point(left,top), cv::Point(left + width,top + height), cv::Scalar(0,255,0),2);
+        // Name
+
+
+        std::string class_string = coconame[pred[i].label] + ' ' + std::to_string(pred[i].score).substr(0, 4);
+        int baseline = 0;
+
+        int fontFace = cv::FONT_HERSHEY_SIMPLEX; // 字體類型
+        double fontScale = 1.0;              // 字體大小
+        int thickness = 2;                   // 字體粗細
+        cv::Size textSize = cv::getTextSize(class_string, fontFace, fontScale, thickness, &baseline);
+        cv::Rect textRect(left, top- textSize.height, textSize.width, textSize.height);
+        cv::rectangle(output,textRect,cv::Scalar(0,255,0),cv::FILLED);
+        putText(output, class_string, cv::Point(left , top), cv::FONT_HERSHEY_DUPLEX, 1, cv::Scalar(0, 0, 0), 1, 0);
+    }
 }
