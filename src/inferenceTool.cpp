@@ -1,5 +1,5 @@
 #include "../include/inferenceTool.hpp"
-inferenceTool::inferenceTool(std::string path)
+TRTInferenceTool::TRTInferenceTool(std::string path)
 {
     std::ifstream file(path, std::ios::binary);
     if (!file.is_open()) {
@@ -53,7 +53,7 @@ inferenceTool::inferenceTool(std::string path)
 }
 
 
-int inferenceTool::getIOSize(char const *name)
+int TRTInferenceTool::getIOSize(char const *name)
 {
     int temp = 1;
     for(int i = 0; i < m_engine->getTensorShape(name).nbDims; i++)
@@ -64,7 +64,7 @@ int inferenceTool::getIOSize(char const *name)
     return temp;
 }
 
-inferenceTool::~inferenceTool()
+TRTInferenceTool::~TRTInferenceTool()
 {
     cudaFree(buffers[0]);
     cudaFree(buffers[1]);
@@ -73,7 +73,7 @@ inferenceTool::~inferenceTool()
     m_runtime.reset();
 }
 
-void inferenceTool::run(std::vector<float> &input, cv::Mat &output)
+void TRTInferenceTool::run(std::vector<float> &input, cv::Mat &output)
 {
     cudaStream_t stream;
     cudaStreamCreate(&stream);

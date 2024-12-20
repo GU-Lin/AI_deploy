@@ -20,14 +20,26 @@ public:
         }
     }
 };
+
 class inferenceTool
 {
     public:
-        inferenceTool(std::string path);
-        ~inferenceTool();
-        void run(std::vector<float> &input, cv::Mat &output);
-    private:
+        inferenceTool() = default;
+        explicit inferenceTool(std::string path){};
+        ~inferenceTool(){};
+        virtual void run(std::vector<float> &input, cv::Mat &output){};
         std::string m_modelPath;
+};
+
+class TRTInferenceTool : public inferenceTool
+{
+    public:
+        TRTInferenceTool(std::string path);
+        ~TRTInferenceTool();
+        void run(std::vector<float> &input, cv::Mat &output) override;
+    private:
+        int getIOSize(char const *name);
+
         std::unique_ptr<IExecutionContext> m_context;
         std::shared_ptr<ICudaEngine> m_engine;
         std::unique_ptr<IRuntime> m_runtime;
@@ -35,7 +47,6 @@ class inferenceTool
         int m_outputSize = 0;
         int m_outputBoxNum = 8400;
         int m_outputClass = 84; // w,y,w,h and 80 class-> 80+4
-        int getIOSize(char const *name);
         Logger gLogger;
         char const* inputName;
         char const* outputName;
