@@ -2,7 +2,7 @@
 engine="TensorRT"
 arch="x86_64"
 cuda_version="12.6"
-ubuntu_version="20.04"
+ubuntu_version="22.04"
 
 make_TensorRT()
 {
@@ -10,7 +10,7 @@ make_TensorRT()
     ./docker/build.sh --file docker/ubuntu-${ubuntu_version}.Dockerfile --tag tensorrt-ubuntu${ubuntu_version}-cuda${cuda_version}:${arch}
     cd ../../
 
-    docker run --rm -it -v `pwd`:/workspace tensorrt-ubuntu20.04-cuda12.6:${arch} bash -c \
+    docker run --rm -it -v `pwd`:/workspace tensorrt-ubuntu22.04-cuda12.6:${arch} bash -c \
     "mkdir build_${arch} && cd build_${arch} && mkdir ${engine} &&
     cp -rf /TensorRT*/include /workspace/build_${arch}/${engine} &&
     cp -rf /TensorRT*/targets/*/bin /workspace/build_${arch}/${engine} &&
@@ -30,5 +30,16 @@ make_opencv()
     "cp -rf /opencv /workspace/build_${arch} && exit"
 
 }
-make_${engine}
+
+make_tensorflow()
+{
+    cd docker
+    docker build -t tensorflow -f build_tensorflow.dockerfile .
+    cd ..
+    docker run --rm  -it -v `pwd`:/workspace tensorflow bash -c \
+    "cp -rf /tensorflow /workspace/build_${arch} && exit"
+
+}
+# make_${engine}
 # make_opencv
+make_tensorflow
