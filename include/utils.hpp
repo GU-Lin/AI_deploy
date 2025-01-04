@@ -3,7 +3,7 @@
 #include <string>
 #include <vector>
 #include <algorithm>
-
+#pragma once
 struct PredBox
 {
     float cx;
@@ -47,7 +47,7 @@ class objectDetection
         int i_height;
         int i_width;
         int i_channels;
-        float m_conf_thres = 0.25;
+        float m_conf_thres = 0.30;
         float m_iou_thres = 0.45;
         int m_class_number = 0;
         bool autoFlag = true;
