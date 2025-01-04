@@ -129,6 +129,10 @@ void objectDetection::NMS(std::vector<PredBox> &pred)
         }
     }
     pred = result;
+    for(int i = 0; i < pred.size(); i++)
+    {
+        std::cout << pred[i].score << std::endl;
+    }
 }
 
 void objectDetection::draw(cv::Mat &input, cv::Mat &output, std::vector<PredBox> &pred)
