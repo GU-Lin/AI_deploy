@@ -1,4 +1,7 @@
-#include "../include/inferenceTool.hpp"
+#include "../include/trtInferenceTool.hpp"
+
+Logger logger;
+
 TRTInferenceTool::TRTInferenceTool(std::string path)
 {
     std::ifstream file(path, std::ios::binary);
@@ -16,7 +19,7 @@ TRTInferenceTool::TRTInferenceTool(std::string path)
     file.close();
 
     // 創建 TensorRT runtime
-    m_runtime.reset(createInferRuntime(gLogger));
+    m_runtime.reset(createInferRuntime(logger));
     if (!m_runtime) {
         std::cerr << "Failed to create InferRuntime" << std::endl;
         return ;
@@ -89,4 +92,49 @@ void TRTInferenceTool::run(std::vector<float> &input, cv::Mat &output)
 
     cv::Mat m(m_outputClass,m_outputBoxNum, CV_32FC1, hostData);
     output = m.clone();
+}
+
+void TRTInferenceTool::setConfig(IInt8EntropyCalibrator2 &Calibrator)
+{
+    m_builder.reset(createInferBuilder(logger));
+    // m_builder->setInt8Calibrator(&Calibrator);
+    m_config.reset(m_builder->createBuilderConfig());
+    m_config->setMemoryPoolLimit(MemoryPoolType::kWORKSPACE,16*(1 << 20));
+    m_config->setFlag(nvinfer1::BuilderFlag::kDEBUG);
+    m_config->setFlag(BuilderFlag::kINT8); // 啟用 INT8 模式
+    // m_config->setAvgTimingIterations(10);
+    m_config->setInt8Calibrator(&Calibrator);
+}
+
+void TRTInferenceTool::buildSerial(std::string input, std::string output)
+{
+    m_network.reset(m_builder->createNetworkV2(0));
+    loadOnnxModel(input);
+    std::cout << "Start reset int8 engine" << std::endl;
+    m_int8Engine.reset(m_builder->buildEngineWithConfig(*m_network.get(), *m_config.get()));
+    std::cout << "Start convert" << std::endl;
+    std::ofstream outputFile(output, std::ios::binary);
+    m_serializedModel.reset(m_int8Engine->serialize());
+    outputFile.write(reinterpret_cast<const char*>(m_serializedModel->data()),m_serializedModel->size());
+    std::cout << "Convert done" << std::endl;
+    m_serializedModel.reset();
+    outputFile.close();
+    m_int8Engine.reset();
+    m_network.reset();
+    m_config.reset();
+    m_builder.reset();
+}
+
+void TRTInferenceTool::loadOnnxModel(const std::string& onnxFile) {
+    auto parser = nvonnxparser::createParser(*m_network.get(), logger);
+    if (!parser->parseFromFile(onnxFile.c_str(), static_cast<int>(nvinfer1::ILogger::Severity::kWARNING))) {
+        throw std::runtime_error("Failed to parse ONNX model: " + onnxFile);
+    }
+
+    // 检查是否有输出张量
+    if (m_network->getNbOutputs() == 0) {
+        throw std::runtime_error("ONNX model must have at least one output.");
+    }
+    std::cout << "Load onnx sucessful" << std::endl;
+    // delete parser;
 }
