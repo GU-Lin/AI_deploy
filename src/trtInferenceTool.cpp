@@ -94,19 +94,17 @@ void TRTInferenceTool::run(std::vector<float> &input, cv::Mat &output)
     output = m.clone();
 }
 
-void TRTInferenceTool::setConfig(IInt8EntropyCalibrator2 &Calibrator)
+void TRTCalibrateTool::setConfig(IInt8EntropyCalibrator2 &Calibrator)
 {
     m_builder.reset(createInferBuilder(logger));
-    // m_builder->setInt8Calibrator(&Calibrator);
     m_config.reset(m_builder->createBuilderConfig());
     m_config->setMemoryPoolLimit(MemoryPoolType::kWORKSPACE,16*(1 << 20));
     m_config->setFlag(nvinfer1::BuilderFlag::kDEBUG);
     m_config->setFlag(BuilderFlag::kINT8); // 啟用 INT8 模式
-    // m_config->setAvgTimingIterations(10);
     m_config->setInt8Calibrator(&Calibrator);
 }
 
-void TRTInferenceTool::buildSerial(std::string input, std::string output)
+void TRTCalibrateTool::buildSerial(std::string input, std::string output)
 {
     m_network.reset(m_builder->createNetworkV2(0));
     loadOnnxModel(input);
@@ -125,16 +123,14 @@ void TRTInferenceTool::buildSerial(std::string input, std::string output)
     m_builder.reset();
 }
 
-void TRTInferenceTool::loadOnnxModel(const std::string& onnxFile) {
+void TRTCalibrateTool::loadOnnxModel(const std::string& onnxFile) {
     auto parser = nvonnxparser::createParser(*m_network.get(), logger);
     if (!parser->parseFromFile(onnxFile.c_str(), static_cast<int>(nvinfer1::ILogger::Severity::kWARNING))) {
         throw std::runtime_error("Failed to parse ONNX model: " + onnxFile);
     }
 
-    // 检查是否有输出张量
     if (m_network->getNbOutputs() == 0) {
         throw std::runtime_error("ONNX model must have at least one output.");
     }
     std::cout << "Load onnx sucessful" << std::endl;
-    // delete parser;
 }

@@ -16,9 +16,7 @@ class TRTInferenceTool : public inferenceTool
         TRTInferenceTool(std::string path);
         ~TRTInferenceTool();
         void run(std::vector<float> &input, cv::Mat &output) override;
-        void setConfig(IInt8EntropyCalibrator2 &Calibrator);
-        void buildSerial(std::string input, std::string output);
-        void loadOnnxModel(const std::string& onnxFile);
+
     private:
         int getIOSize(char const *name);
 
@@ -27,11 +25,11 @@ class TRTInferenceTool : public inferenceTool
         std::unique_ptr<IRuntime> m_runtime;
 
         // quantization
-        std::unique_ptr<IBuilderConfig> m_config;
-        std::unique_ptr<IBuilder> m_builder;
-        std::unique_ptr<INetworkDefinition> m_network;
-        std::unique_ptr<ICudaEngine> m_int8Engine;
-        std::unique_ptr<IHostMemory> m_serializedModel;
+        // std::unique_ptr<IBuilderConfig> m_config;
+        // std::unique_ptr<IBuilder> m_builder;
+        // std::unique_ptr<INetworkDefinition> m_network;
+        // std::unique_ptr<ICudaEngine> m_int8Engine;
+        // std::unique_ptr<IHostMemory> m_serializedModel;
         int m_inputSize = 0;
         int m_outputSize = 0;
         int m_outputBoxNum = 8400;
@@ -42,6 +40,20 @@ class TRTInferenceTool : public inferenceTool
         void* buffers[2];
         float* hostData;
 
+};
+
+class TRTCalibrateTool
+{
+    public:
+        void setConfig(IInt8EntropyCalibrator2 &Calibrator);
+        void buildSerial(std::string input, std::string output);
+        void loadOnnxModel(const std::string& onnxFile);
+    private:
+        std::unique_ptr<IBuilderConfig> m_config;
+        std::unique_ptr<IBuilder> m_builder;
+        std::unique_ptr<INetworkDefinition> m_network;
+        std::unique_ptr<ICudaEngine> m_int8Engine;
+        std::unique_ptr<IHostMemory> m_serializedModel;
 };
 
 
