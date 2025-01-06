@@ -6,3 +6,5 @@ CMakeFiles
 /data/*.pt
 /data/*.trt
 /data/*.onnx
+*.png
+.cache
